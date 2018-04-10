@@ -16,9 +16,10 @@ const getDisplayName = WrappedComponent =>
 export default function StoreProvider(AppStore: TStore, opts?: IOptions) {
   return function wrapper(Base: React.ComponentClass): any {
     return class WrapperComponent extends Base {
-      static displayName = `StoreProvider(${getDisplayName(Base)})`;
-      static childContextTypes = { _plume$Store: PropTypes.object };
+      static displayName = `StoreProvider(${getDisplayName(Base)})`; // 名字
+      static childContextTypes = { _plume$Store: PropTypes.object }; // 传递上下文
 
+      // 传递上下文， 和childContextTypes，还有子组件 static contextTypes一起使用，隐式传递参数
       getChildContext: Function = (): Object => {
         return { _plume$Store: this.store };
       };
@@ -29,7 +30,11 @@ export default function StoreProvider(AppStore: TStore, opts?: IOptions) {
         this._isMounted = false;
         this.store = new AppStore(opts || { debug: false });
 
-        this.state = { ...this.state, ...this.store.state().toObject() };
+        // this.state.state() => state(immutable.toObject)
+        this.state = {
+          ...this.state,
+          ...this.store.state().toObject()
+        };
 
         this.store.subscribe(this._handleStoreChange);
       }
@@ -38,6 +43,7 @@ export default function StoreProvider(AppStore: TStore, opts?: IOptions) {
       state: Object;
       _isMounted: boolean;
 
+      // 自己willMount
       componentWillMount() {
         super.componentWillMount && super.componentWillMount();
         this._isMounted = false;
@@ -120,6 +126,7 @@ export default function StoreProvider(AppStore: TStore, opts?: IOptions) {
         return super.render();
       }
 
+      // 这个store改变，导致渲染
       _handleStoreChange = (state: IMap) => {
         //will drop on production env
         if (process.env.NODE_ENV != 'production') {

@@ -10,11 +10,11 @@ export default class Actor {
     this._route = this._route || {};
   }
 
-  defaultState(): Object {
+  defaultState(): Object {// 在项目actor中重写，是初始化的state.
     return {};
   }
 
-  private _route: TRoute;
+  private _route: TRoute;// _route就是一个object, 然后{msg: function(state, params){return state}}
 
   /**
    * 接收store分派的任务

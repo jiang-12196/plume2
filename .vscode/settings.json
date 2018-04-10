@@ -8,5 +8,6 @@
     80
   ],
   "editor.tabCompletion": true,
-  "typescript.tsdk": "./node_modules/typescript/lib"
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "prettier.singleQuote": true
 }

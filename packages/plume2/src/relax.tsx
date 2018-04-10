@@ -28,12 +28,14 @@ export default function RelaxContainer(Wrapper: IRelaxComponent): any {
     private _dql2QL: { [name: string]: QueryLang };
     private _isMounted: boolean;
 
+    // 父子组件可以传递props，还有context, 而且可以一直传下去
     constructor(props: Object, context: IRelaxContext<Store>) {
       super(props);
       this._isMounted = false;
       this._dql2QL = {};
       this.state = { storeState: fromJS({}) };
       //提前绑定事件，为了争取父子有序
+      // 最后看一下，应该是其他的在mount，就不监听
       context._plume$Store.subscribe(this._handleStoreChange);
     }
 
@@ -57,21 +59,23 @@ export default function RelaxContainer(Wrapper: IRelaxComponent): any {
         }
       }
     }
-
+    // isMountes的改变
     componentDidMount() {
       if (process.env.NODE_ENV !== 'production') {
         if ((this.context['_plume$Store'] as any)._opts.debug) {
           console.timeEnd(`${Relax.displayName} render`);
         }
       }
-
+      
       this._isMounted = true;
     }
-
+    
+    // isMountes的改变
     componentWillUpdate() {
       this._isMounted = false;
     }
-
+    
+    // isMountes的改变
     componentDidUpdate() {
       if (process.env.NODE_ENV !== 'production') {
         if ((this.context['_plume$Store'] as any)._opts.debug) {
@@ -120,6 +124,7 @@ export default function RelaxContainer(Wrapper: IRelaxComponent): any {
       }
     }
 
+    // 去掉监听
     componentWillUnmount() {
       this.context['_plume$Store'].unsubscribe(this._handleStoreChange);
     }
@@ -128,6 +133,12 @@ export default function RelaxContainer(Wrapper: IRelaxComponent): any {
       return <Wrapper {...this.props} relaxProps={this.relaxProps} />;
     }
 
+    // 根本不需要props
+    // 计算relaxProps，根本不需要props
+    // 有几种形式
+    // 1. string
+    // 2. function
+    // 3. ql
     computeRelaxProps(props) {
       //dev check
       if (process.env.NODE_ENV != 'production') {
@@ -182,6 +193,7 @@ export default function RelaxContainer(Wrapper: IRelaxComponent): any {
     };
   };
 
+  // 没有用到
   function _isNotValidValue(v: any) {
     return typeof v != 'undefined' && v != null;
   }

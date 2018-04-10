@@ -11,10 +11,16 @@
  * @param msg 事件名
  */
 
+ //decorator
+
+ // action = () => function(){}
+ // 是一个高阶函数，返回一个函数
+ // 目的是将Action下面的function放到_route中，actor.resive调用就可以。
+ // 不懂。。。
 export const Action = (msg: string) => (
-  target: any,
-  property: any,
-  descriptor: TypedPropertyDescriptor<any>
+  target: any, // target是actor，这个类
+  property: any, // 所在
+  descriptor: TypedPropertyDescriptor<any> // 不太懂...
 ) => {
   target._route || (target._route = {});
 

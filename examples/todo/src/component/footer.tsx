@@ -6,6 +6,7 @@ import actionCreator from '../action-creator';
 
 @Relax
 export default class Footer extends React.Component {
+  // 只是typeScript中不标红
   props: {
     relaxProps?: {
       count: number;

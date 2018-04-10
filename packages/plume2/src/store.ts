@@ -62,7 +62,7 @@ export default class Store {
   /**
    * 绑定Actor
    */
-  bindActor(): Array<Actor> {
+  bindActor(): Array<Actor> { // 绑定actor, 会在项目store中重写，返回所有的actor（DDD）
     return [];
   }
 
@@ -92,6 +92,7 @@ export default class Store {
    * @param params  参数
    */
   dispatch(msg: string, params?: any) {
+    // 获取新的状态
     const newStoreState = this._dispatchActor(msg, params);
 
     //如果发生store的状态变化
@@ -99,7 +100,7 @@ export default class Store {
       this._state = newStoreState;
       //如果在dispatch不在transation内，通知UI去re-render
       if (!this._isInTranstion) {
-        this._notifier();
+        this._notifier(); // 渲染
       }
     }
   }
@@ -181,17 +182,19 @@ export default class Store {
     }
   }
 
+  //拿到初始state
   private reduceActorState() {
     this._state = this._state.withMutations(state => {
       for (let actor of this._actors) {
-        let initState = fromJS(actor.defaultState());
-        this._actorsState.push(initState);
+        let initState = fromJS(actor.defaultState()); // 这里将所有的[],{}等转成immutable
+        this._actorsState.push(initState);// 用来判断当前的状态，修改的actor中的状态一致不
         state = state.merge(initState);
       }
       return state;
     });
   }
 
+  // 重新渲染，unstable_batchedUpdates
   private _notifier() {
     batchedUpdates(() => {
       this._callbacks.forEach(cb => cb(this._state));
@@ -217,6 +220,7 @@ export default class Store {
       }
     }
 
+    // 做循环，找到当前msg所在的actor，然后做动作
     for (let i = 0, len = this._actors.length; i < len; i++) {
       let actor = this._actors[i] as any;
       const fn = actor._route[msg];
@@ -243,13 +247,14 @@ export default class Store {
       }
 
       let preActorState = this._actorsState[i];
-      const newActorState = actor.receive(msg, preActorState, params);
+      const newActorState = actor.receive(msg, preActorState, params);//拿到当前actor的状态，然后拿到
       if (preActorState != newActorState) {
         this._actorsState[i] = newActorState;
         _state = _state.merge(newActorState);
       }
     }
 
+    // log
     if (process.env.NODE_ENV != 'production') {
       if (this._opts.debug) {
         console.groupEnd && console.groupEnd();
@@ -263,12 +268,15 @@ export default class Store {
    * 计算querylang
    * @param ql querylang
    */
+  // 查询store中数据的重要方法
+  // ql并不重要，重要的是这个bigQuery函数，根绝lang的格式，计算出来这个store
   bigQuery = (ql: QueryLang | string | Array<string | number>): any => {
     //如果当前的查询参数是字符串，直接获取状态对应的路径参数
     if (isString(ql)) {
       return this._state.get(ql as string);
     }
 
+    // getIn(['a', 'b']) foo.a.b
     if (isArray(ql)) {
       return this._state.getIn(ql as Array<any>);
     }
@@ -277,6 +285,7 @@ export default class Store {
       throw new Error('invalid QL');
     }
 
+    // 计算QL, 比较麻烦，最后去看
     //数据是否过期,默认否
     let outdate = false;
     const id = ql.id();
@@ -284,8 +293,10 @@ export default class Store {
     //获取缓存数据结构
     this._cacheQL[id] = this._cacheQL[id] || [];
     //copy lang
+    // 深复制
     const lang = ql.lang().slice();
     //reactive function
+    // lang的最后一个
     const rxFn = lang.pop();
 
     //will drop on production env
@@ -297,6 +308,7 @@ export default class Store {
       }
     }
 
+    // 拿到所有的值， 是个array
     let args = lang.map((elem, index) => {
       if (elem instanceof QueryLang) {
         const value = this.bigQuery(elem);
@@ -328,6 +340,7 @@ export default class Store {
           value != this._cacheQL[id][index]
         ) {
           outdate = true;
+          // 将lang array中每一个index都做了_cacheQL[id]
           this._cacheQL[id][index] = value;
         }
 
@@ -349,6 +362,7 @@ export default class Store {
 
     //如果数据过期，重新计算一次
     if (outdate) {
+      // lang array中的前后关系必须和最后函数参数的前后顺序一样
       const result = rxFn.apply(null, args);
       this._cacheQL[id][args.length] = result;
 
@@ -407,6 +421,7 @@ export default class Store {
    * 定义store发生的数据变化
    * @param cb 回调函数
    */
+  // 在store.provider 中调到, store发生改变盗用
   subscribe(cb: TSubscribeHandler) {
     if (typeof cb != 'function' || this._callbacks.indexOf(cb) != -1) {
       return;
