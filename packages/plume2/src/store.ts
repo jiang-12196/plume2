@@ -247,7 +247,7 @@ export default class Store {
       }
 
       let preActorState = this._actorsState[i];
-      const newActorState = actor.receive(msg, preActorState, params);//拿到当前actor的状态，然后拿到
+      const newActorState = actor.receive(msg, preActorState, params);// 拿到当前actor的状态，然后拿到
       if (preActorState != newActorState) {
         this._actorsState[i] = newActorState;
         _state = _state.merge(newActorState);

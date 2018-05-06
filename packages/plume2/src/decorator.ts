@@ -14,6 +14,7 @@
  //decorator
 
  // action = () => function(){}
+ // typeScript 装饰器， class 里面使用
  // 是一个高阶函数，返回一个函数
  // 目的是将Action下面的function放到_route中，actor.resive调用就可以。
  // 不懂。。。
